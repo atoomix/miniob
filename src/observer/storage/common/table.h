@@ -102,6 +102,8 @@ private:
 
 private:
   RC init_record_handler(const char *base_dir);
+
+  // serialize values into record_out
   RC make_record(int value_num, const Value *values, char *&record_out);
 
 public:

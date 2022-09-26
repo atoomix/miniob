@@ -27,6 +27,7 @@ public:
   UpdateStmt(Table *table, Value *values, int value_amount);
 
 public:
+  // FIXME: xxx
   static RC create(Db *db, const Updates &update_sql, Stmt *&stmt);
 
 public:
@@ -39,4 +40,3 @@ private:
   Value *values_ = nullptr;
   int value_amount_ = 0;
 };
-
