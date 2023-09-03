@@ -122,6 +122,45 @@ RC Table::create(int32_t table_id,
   return rc;
 }
 
+RC Table::drop()
+{
+  LOG_INFO("Begin to drop table %s:%s", base_dir_, table_meta_.name());
+
+  RC rc = RC::SUCCESS;
+
+  // delete table meta
+  std::string meta_file = table_meta_file(base_dir_.c_str(), table_meta_.name());
+  if (::unlink(meta_file.c_str()) != 0) {
+    LOG_ERROR("Failed to delete table meta file. file name=%s, errmsg=%s", meta_file.c_str(), strerror(errno));
+    rc = RC::SCHEMA_DB_NOT_EXIST;
+    return rc;
+  }
+
+  // deleta table data
+  std::string data_file = table_data_file(base_dir_.c_str(), table_meta_.name());
+  auto       &bpm       = BufferPoolManager::instance();
+  rc                    = bpm.remove_file(data_file.c_str());
+  if (rc != RC::SUCCESS) {
+    LOG_ERROR("Failed to delete table data file. file name=%s, errmsg=%s", data_file.c_str(), strerror(errno));
+    return rc;
+  }
+
+  // delete table index if exists
+  for (auto *index : indexes_) {
+    std::string index_file       = table_index_file(base_dir_.c_str(), table_meta_.name(), index->index_meta().name());
+    auto       *bplus_tree_index = dynamic_cast<BplusTreeIndex *>(index);
+    assert(bplus_tree_index != nullptr);
+
+    rc = bplus_tree_index->remove(index_file.c_str());
+    if (rc != RC::SUCCESS) {
+      LOG_ERROR("Failed to delete index file. file name=%s, errmsg=%s", index_file.c_str(), strerror(errno));
+      return rc;
+    }
+  }
+
+  return rc;
+}
+
 RC Table::open(const char *meta_file, const char *base_dir)
 {
   // 加载元数据文件

@@ -737,6 +737,24 @@ RC BufferPoolManager::close_file(const char *_file_name)
   return RC::SUCCESS;
 }
 
+RC BufferPoolManager::remove_file(const char *file_name)
+{
+  struct stat stat;
+  int         rc = ::stat(file_name, &stat);
+  if (rc != 0) {
+    LOG_WARN("Failed to stat file %s, due to %s", file_name, strerror(errno));
+    return RC::IOERR_ACCESS;
+  }
+
+  rc = ::unlink(file_name);
+  if (rc != 0) {
+    LOG_WARN("Failed to remove file %s, due to %s", file_name, strerror(errno));
+    return RC::IOERR_ACCESS;
+  }
+
+  return RC::SUCCESS;
+}
+
 RC BufferPoolManager::flush_page(Frame &frame)
 {
   int fd = frame.file_desc();

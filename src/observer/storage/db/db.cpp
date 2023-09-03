@@ -20,6 +20,7 @@ See the Mulan PSL v2 for more details. */
 
 #include "common/log/log.h"
 #include "common/os/path.h"
+#include "common/macros.h"
 #include "common/lang/string.h"
 #include "storage/table/table_meta.h"
 #include "storage/table/table.h"
@@ -97,6 +98,27 @@ RC Db::create_table(const char *table_name, int attribute_count, const AttrInfoS
 
   opened_tables_[table_name] = table;
   LOG_INFO("Create table success. table name=%s", table_name);
+  return RC::SUCCESS;
+}
+
+RC Db::drop_table(const char *table_name)
+{
+  RC     rc    = RC::SUCCESS;
+  Table *table = find_table(table_name);
+  if (OB_UNLIKELY(table == nullptr)) {
+    LOG_WARN("Table %s does not exist.", table_name);
+    return RC::SCHEMA_TABLE_NOT_EXIST;
+  }
+
+  rc = table->drop();
+  if (rc != RC::SUCCESS) {
+    LOG_ERROR("Failed to drop table %s.", table_name);
+    return rc;
+  }
+
+  opened_tables_.erase(table_name);
+  delete table;
+  LOG_INFO("Drop table success. table name=%s", table_name);
   return RC::SUCCESS;
 }
 
@@ -190,7 +212,4 @@ RC Db::recover()
   return clog_manager_->recover(this);
 }
 
-CLogManager *Db::clog_manager()
-{
-  return clog_manager_.get();
-}
+CLogManager *Db::clog_manager() { return clog_manager_.get(); }

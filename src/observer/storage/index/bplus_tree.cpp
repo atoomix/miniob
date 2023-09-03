@@ -802,6 +802,18 @@ RC BplusTreeHandler::create(const char *file_name, AttrType attr_type, int attr_
   return RC::SUCCESS;
 }
 
+RC BplusTreeHandler::remove(const char *file_name)
+{
+  BufferPoolManager &bpm = BufferPoolManager::instance();
+  RC                 rc  = bpm.remove_file(file_name);
+  if (rc != RC::SUCCESS) {
+    LOG_WARN("Failed to remove file. file name=%s, rc=%d:%s", file_name, rc, strrc(rc));
+    return rc;
+  }
+  LOG_INFO("Successfully remove index file:%s", file_name);
+  return RC::SUCCESS;
+}
+
 RC BplusTreeHandler::open(const char *file_name)
 {
   if (disk_buffer_pool_ != nullptr) {

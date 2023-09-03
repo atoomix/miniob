@@ -310,6 +310,7 @@ public:
   RC create_file(const char *file_name);
   RC open_file(const char *file_name, DiskBufferPool *&bp);
   RC close_file(const char *file_name);
+  RC remove_file(const char *file_name);
 
   RC flush_page(Frame &frame);
 
@@ -321,6 +322,8 @@ private:
   BPFrameManager frame_manager_{"BufPool"};
 
   common::Mutex  lock_;
+
+  // filename -> DiskBufferPool*
   std::unordered_map<std::string, DiskBufferPool *> buffer_pools_;
   std::unordered_map<int, DiskBufferPool *> fd_buffer_pools_;
 };

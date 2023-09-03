@@ -54,12 +54,17 @@ public:
             int attribute_count, 
             const AttrInfoSqlNode attributes[]);
 
+  RC drop();
+
   /**
    * 打开一个表
    * @param meta_file 保存表元数据的文件完整路径
    * @param base_dir 表所在的文件夹，表记录数据文件、索引数据文件存放位置
    */
   RC open(const char *meta_file, const char *base_dir);
+
+  // create和open的区别在于新建和重启恢复
+  // create会创建表的元数据文件，open会从元数据文件中恢复表的元数据
 
   /**
    * @brief 根据给定的字段生成一个记录/行
